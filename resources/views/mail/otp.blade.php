@@ -2,7 +2,7 @@
 # Your Login Code
 
 @if($account)
-Hello {{ $account->getName() }},
+Hello {{ $account->name }},
 @else
 Hello,
 @endif

@@ -2,7 +2,7 @@
 # Welcome to {{ $appName }}!
 
 @if($account)
-Hello {{ $account->getName() }},
+Hello {{ $account->name }},
 @else
 Hello,
 @endif

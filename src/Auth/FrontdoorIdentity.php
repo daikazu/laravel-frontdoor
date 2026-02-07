@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Daikazu\LaravelFrontdoor\Auth;
 
+use Daikazu\LaravelFrontdoor\Concerns\HasPropertyAccess;
 use Daikazu\LaravelFrontdoor\Contracts\AccountData;
 use Illuminate\Contracts\Auth\Authenticatable;
 
 class FrontdoorIdentity implements Authenticatable
 {
+    use HasPropertyAccess;
     public function __construct(
         protected AccountData $account
     ) {}
@@ -100,25 +102,4 @@ class FrontdoorIdentity implements Authenticatable
         return $this->account;
     }
 
-    public function __get(string $name): mixed
-    {
-        return match ($name) {
-            'id' => $this->account->getId(),
-            'name' => $this->account->getName(),
-            'email' => $this->account->getEmail(),
-            'phone' => $this->account->getPhone(),
-            'avatar_url', 'avatarUrl' => $this->account->getAvatarUrl(),
-            'metadata' => $this->account->getMetadata(),
-            'initial' => $this->account->getInitial(),
-            default => $this->account->getMetadata()[$name] ?? null,
-        };
-    }
-
-    public function __isset(string $name): bool
-    {
-        return match ($name) {
-            'id', 'name', 'email', 'phone', 'avatar_url', 'avatarUrl', 'metadata', 'initial' => true,
-            default => array_key_exists($name, $this->account->getMetadata()),
-        };
-    }
 }
