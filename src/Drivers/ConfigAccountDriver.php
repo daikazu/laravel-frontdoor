@@ -27,13 +27,16 @@ class ConfigAccountDriver implements AccountDriver
 
         $data = $this->users[$normalized];
 
+        /** @var array<string, mixed> $metadata */
+        $metadata = isset($data['metadata']) && is_array($data['metadata']) ? $data['metadata'] : [];
+
         return new SimpleAccountData(
-            id: $data['id'] ?? md5($normalized),
-            name: $data['name'] ?? $this->nameFromEmail($normalized),
+            id: isset($data['id']) && is_string($data['id']) ? $data['id'] : md5($normalized),
+            name: isset($data['name']) && is_string($data['name']) ? $data['name'] : $this->nameFromEmail($normalized),
             email: $normalized,
-            phone: $data['phone'] ?? null,
-            avatarUrl: $data['avatar_url'] ?? null,
-            metadata: $data['metadata'] ?? [],
+            phone: isset($data['phone']) && is_string($data['phone']) ? $data['phone'] : null,
+            avatarUrl: isset($data['avatar_url']) && is_string($data['avatar_url']) ? $data['avatar_url'] : null,
+            metadata: $metadata,
         );
     }
 

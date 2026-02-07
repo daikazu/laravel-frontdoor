@@ -47,9 +47,12 @@ class OtpMail extends Mailable implements OtpMailable
 
     public function envelope(): Envelope
     {
+        /** @var string $subject */
+        $subject = config('frontdoor.mail.subject', 'Your login code');
+
         return new Envelope(
             from: $this->fromAddress(),
-            subject: config('frontdoor.mail.subject', 'Your login code'),
+            subject: $subject,
         );
     }
 
@@ -68,9 +71,12 @@ class OtpMail extends Mailable implements OtpMailable
 
     protected function fromAddress(): Address
     {
-        return new Address(
-            config('frontdoor.mail.from.address') ?? config('mail.from.address', 'hello@example.com'),
-            config('frontdoor.mail.from.name') ?? config('mail.from.name', 'Example'),
-        );
+        /** @var string $address */
+        $address = config('frontdoor.mail.from.address') ?? config('mail.from.address', 'hello@example.com');
+
+        /** @var string|null $name */
+        $name = config('frontdoor.mail.from.name') ?? config('mail.from.name', 'Example');
+
+        return new Address($address, $name);
     }
 }

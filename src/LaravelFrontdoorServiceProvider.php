@@ -29,12 +29,18 @@ class LaravelFrontdoorServiceProvider extends PackageServiceProvider
 
     public function packageRegistered(): void
     {
-        $this->app->bind(AccountManager::class, function ($app) {
-            return new AccountManager($app);
+        $this->app->bind(AccountManager::class, function ($app): AccountManager {
+            /** @var \Illuminate\Contracts\Container\Container $container */
+            $container = $app;
+
+            return new AccountManager($container);
         });
 
         $this->app->singleton(OtpStore::class, function ($app) {
+            /** @var string|null $store */
             $store = config('frontdoor.otp.cache_store');
+
+            /** @var string $prefix */
             $prefix = config('frontdoor.otp.cache_prefix', 'frontdoor:otp:');
 
             return new CacheOtpStore(
@@ -43,26 +49,40 @@ class LaravelFrontdoorServiceProvider extends PackageServiceProvider
             );
         });
 
-        $this->app->singleton(OtpManager::class, function ($app) {
-            return new OtpManager(
-                $app->make(OtpStore::class),
-                config('frontdoor.otp', [
-                    'length' => 6,
-                    'ttl' => 600,
-                    'rate_limit' => [
-                        'max_attempts' => 5,
-                        'decay_seconds' => 300,
-                    ],
-                ])
-            );
+        $this->app->singleton(OtpManager::class, function ($app): OtpManager {
+            /** @var array{length: int, ttl: int, rate_limit: array{max_attempts: int, decay_seconds: int}} $otpConfig */
+            $otpConfig = config('frontdoor.otp', [
+                'length' => 6,
+                'ttl' => 600,
+                'rate_limit' => [
+                    'max_attempts' => 5,
+                    'decay_seconds' => 300,
+                ],
+            ]);
+
+            /** @var \Illuminate\Contracts\Foundation\Application $container */
+            $container = $app;
+
+            /** @var OtpStore $otpStore */
+            $otpStore = $container->make(OtpStore::class);
+
+            return new OtpManager($otpStore, $otpConfig);
         });
 
-        $this->app->singleton(Frontdoor::class, function ($app) {
-            return new Frontdoor(
-                $app->make(AccountManager::class),
-                $app->make(OtpManager::class),
-                $app->make(Support\OtpMailer::class)
-            );
+        $this->app->singleton(Frontdoor::class, function ($app): Frontdoor {
+            /** @var \Illuminate\Contracts\Foundation\Application $container */
+            $container = $app;
+
+            /** @var AccountManager $accountManager */
+            $accountManager = $container->make(AccountManager::class);
+
+            /** @var OtpManager $otpManager */
+            $otpManager = $container->make(OtpManager::class);
+
+            /** @var Support\OtpMailer $otpMailer */
+            $otpMailer = $container->make(Support\OtpMailer::class);
+
+            return new Frontdoor($accountManager, $otpManager, $otpMailer);
         });
 
         $this->app->alias(Frontdoor::class, 'frontdoor');
@@ -85,17 +105,27 @@ class LaravelFrontdoorServiceProvider extends PackageServiceProvider
 
     protected function registerAuthGuard(): void
     {
-        Auth::provider('frontdoor', function ($app, array $config) {
-            return new FrontdoorUserProvider(
-                $app->make(AccountManager::class)->driver()
-            );
+        Auth::provider('frontdoor', function ($app, array $config): FrontdoorUserProvider {
+            /** @var \Illuminate\Contracts\Foundation\Application $container */
+            $container = $app;
+
+            /** @var AccountManager $accountManager */
+            $accountManager = $container->make(AccountManager::class);
+
+            /** @var \Daikazu\LaravelFrontdoor\Contracts\AccountDriver $driver */
+            $driver = $accountManager->driver();
+
+            return new FrontdoorUserProvider($driver);
         });
 
-        Auth::extend('frontdoor', function ($app, $name, array $config) {
-            return new FrontdoorGuard(
-                $app['session.store'],
-                'frontdoor_identity'
-            );
+        Auth::extend('frontdoor', function ($app, $name, array $config): FrontdoorGuard {
+            /** @var \Illuminate\Contracts\Foundation\Application $container */
+            $container = $app;
+
+            /** @var \Illuminate\Contracts\Session\Session $session */
+            $session = $container->make('session.store');
+
+            return new FrontdoorGuard($session, 'frontdoor_identity');
         });
 
         config([

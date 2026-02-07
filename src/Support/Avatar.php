@@ -14,7 +14,10 @@ class Avatar
         $hue2 = hexdec(substr($hash, 2, 2)) / 255 * 360;
         $angle = hexdec(substr($hash, 4, 2)) / 255 * 360;
 
+        /** @var int $saturation */
         $saturation = config('frontdoor.avatar.saturation', 65);
+
+        /** @var int $lightness */
         $lightness = config('frontdoor.avatar.lightness', 55);
 
         // Ensure hues are different enough (min 30° apart)

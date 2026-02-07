@@ -34,7 +34,7 @@ class FrontdoorUserProvider implements UserProvider
      */
     public function retrieveByCredentials(array $credentials): ?Authenticatable
     {
-        if (! isset($credentials['email'])) {
+        if (! isset($credentials['email']) || ! is_string($credentials['email'])) {
             return null;
         }
 

@@ -85,7 +85,10 @@ class LoginFlow extends Component
             if ($this->isRegistering) {
                 if (Frontdoor::verifyEmailOnly($this->email, $this->code)) {
                     $fields = Frontdoor::registrationFields();
-                    $this->registrationFields = array_map(fn ($f) => $f->toArray(), $fields);
+
+                    /** @var array<int, array<string, mixed>> $mappedFields */
+                    $mappedFields = array_map(fn ($f) => $f->toArray(), $fields);
+                    $this->registrationFields = $mappedFields;
                     $this->registrationData = [];
                     foreach ($fields as $field) {
                         $this->registrationData[$field->name] = $field->type === 'checkbox' ? false : '';
@@ -99,6 +102,7 @@ class LoginFlow extends Component
                 if (Frontdoor::verify($this->email, $this->code)) {
                     /** @var \Daikazu\LaravelFrontdoor\Auth\FrontdoorIdentity|null $user */
                     $user = auth('frontdoor')->user();
+
                     session()->put('frontdoor.login_success', $user?->getName());
 
                     $this->redirect(url()->previous('/'));
@@ -122,6 +126,7 @@ class LoginFlow extends Component
 
             /** @var \Daikazu\LaravelFrontdoor\Auth\FrontdoorIdentity|null $user */
             $user = auth('frontdoor')->user();
+
             session()->put('frontdoor.login_success', $user?->getName());
 
             $this->redirect(url()->previous('/'));
@@ -165,7 +170,7 @@ class LoginFlow extends Component
         $this->registrationFields = [];
     }
 
-    public function render()
+    public function render(): \Illuminate\Contracts\View\View
     {
         return view('frontdoor::livewire.login-flow');
     }

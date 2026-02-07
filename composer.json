@@ -1,10 +1,16 @@
 {
     "name": "daikazu/laravel-frontdoor",
-    "description": "This is my package laravel-frontdoor",
+    "description": "OTP-based passwordless email authentication for Laravel. No database tables required — codes stored in cache, identity in session.",
     "keywords": [
-        "Daikazu",
         "laravel",
-        "laravel-frontdoor"
+        "authentication",
+        "passwordless",
+        "otp",
+        "one-time-password",
+        "email-login",
+        "magic-code",
+        "livewire",
+        "session-auth"
     ],
     "homepage": "https://github.com/daikazu/laravel-frontdoor",
     "license": "MIT",

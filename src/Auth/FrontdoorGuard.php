@@ -50,15 +50,24 @@ class FrontdoorGuard implements Guard
             return null;
         }
 
+        /** @var array<string, mixed> $data */
         $account = $this->hydrateAccountData($data);
         $this->user = new FrontdoorIdentity($account);
 
         return $this->user;
     }
 
-    public function id(): mixed
+    public function id(): int|string|null
     {
-        return $this->user()?->getAuthIdentifier();
+        $user = $this->user();
+
+        if ($user === null) {
+            return null;
+        }
+
+        $id = $user->getAuthIdentifier();
+
+        return is_int($id) || is_string($id) ? $id : null;
     }
 
     /**
@@ -123,13 +132,20 @@ class FrontdoorGuard implements Guard
      */
     protected function hydrateAccountData(array $data): AccountData
     {
+        $id = $data['id'] ?? '';
+        $name = $data['name'] ?? '';
+        $email = $data['email'] ?? '';
+
+        /** @var array<string, mixed> $metadata */
+        $metadata = isset($data['metadata']) && is_array($data['metadata']) ? $data['metadata'] : [];
+
         return new SimpleAccountData(
-            id: $data['id'] ?? '',
-            name: $data['name'] ?? '',
-            email: $data['email'] ?? '',
-            phone: $data['phone'] ?? null,
-            avatarUrl: $data['avatar_url'] ?? null,
-            metadata: $data['metadata'] ?? [],
+            id: is_string($id) ? $id : '',
+            name: is_string($name) ? $name : '',
+            email: is_string($email) ? $email : '',
+            phone: isset($data['phone']) && is_string($data['phone']) ? $data['phone'] : null,
+            avatarUrl: isset($data['avatar_url']) && is_string($data['avatar_url']) ? $data['avatar_url'] : null,
+            metadata: $metadata,
         );
     }
 }

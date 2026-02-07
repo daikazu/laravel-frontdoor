@@ -28,9 +28,15 @@ class WelcomeMail extends Mailable
 
     public function envelope(): Envelope
     {
+        /** @var string $appName */
+        $appName = config('app.name');
+
+        /** @var string $subject */
+        $subject = config('frontdoor.mail.welcome_subject', 'Welcome to '.$appName);
+
         return new Envelope(
             from: $this->fromAddress(),
-            subject: config('frontdoor.mail.welcome_subject', 'Welcome to '.config('app.name')),
+            subject: $subject,
         );
     }
 
@@ -47,9 +53,12 @@ class WelcomeMail extends Mailable
 
     protected function fromAddress(): Address
     {
-        return new Address(
-            config('frontdoor.mail.from.address') ?? config('mail.from.address', 'hello@example.com'),
-            config('frontdoor.mail.from.name') ?? config('mail.from.name', 'Example'),
-        );
+        /** @var string $address */
+        $address = config('frontdoor.mail.from.address') ?? config('mail.from.address', 'hello@example.com');
+
+        /** @var string|null $name */
+        $name = config('frontdoor.mail.from.name') ?? config('mail.from.name', 'Example');
+
+        return new Address($address, $name);
     }
 }

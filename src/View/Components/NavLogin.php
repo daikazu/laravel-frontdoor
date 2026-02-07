@@ -14,8 +14,13 @@ class NavLogin extends Component
         public ?string $accountRoute = null,
         public string $size = 'md',
     ) {
-        $this->label ??= config('frontdoor.ui.nav.login_label', 'Login');
-        $this->accountRoute ??= config('frontdoor.ui.nav.account_route');
+        /** @var string $loginLabel */
+        $loginLabel = config('frontdoor.ui.nav.login_label', 'Login');
+        $this->label ??= $loginLabel;
+
+        /** @var string|null $accountRouteConfig */
+        $accountRouteConfig = config('frontdoor.ui.nav.account_route');
+        $this->accountRoute ??= $accountRouteConfig;
     }
 
     public function render(): View

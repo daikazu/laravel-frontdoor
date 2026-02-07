@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static bool loginAs(string $email)
  * @method static bool registrationEnabled()
  * @method static \Daikazu\LaravelFrontdoor\Support\RegistrationField[] registrationFields()
- * @method static \Daikazu\LaravelFrontdoor\Contracts\AccountData register(string $email, array $data = [])
+ * @method static \Daikazu\LaravelFrontdoor\Contracts\AccountData register(string $email, array<string, mixed> $data = [])
  *
  * @see \Daikazu\LaravelFrontdoor\Frontdoor
  */

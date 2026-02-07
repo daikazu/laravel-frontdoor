@@ -21,7 +21,9 @@ class CacheOtpStore implements OtpStore
 
     public function get(string $identifier): ?string
     {
-        return $this->cache->get($this->key($identifier));
+        $value = $this->cache->get($this->key($identifier));
+
+        return is_string($value) ? $value : null;
     }
 
     public function forget(string $identifier): void

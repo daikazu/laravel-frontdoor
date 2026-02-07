@@ -17,7 +17,10 @@ class AccountManager extends Manager
 {
     public function getDefaultDriver(): string
     {
-        return $this->config->get('frontdoor.accounts.driver', 'testing');
+        /** @var string $driver */
+        $driver = $this->config->get('frontdoor.accounts.driver', 'testing');
+
+        return $driver;
     }
 
     /**
@@ -63,6 +66,7 @@ class AccountManager extends Manager
         /** @var array<string, array<string, mixed>> $users */
         $users = $this->config->get('frontdoor.accounts.drivers.testing.users', []);
 
+        /** @var string|null $store */
         $store = $this->config->get('frontdoor.otp.cache_store');
 
         return new CacheAccountDriver(Cache::store($store), $users);

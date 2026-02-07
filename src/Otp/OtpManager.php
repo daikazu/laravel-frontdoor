@@ -82,7 +82,10 @@ class OtpManager
 
     protected function hash(string $code): string
     {
-        return hash_hmac('sha256', $code, config('app.key'));
+        /** @var string $key */
+        $key = config('app.key');
+
+        return hash_hmac('sha256', $code, $key);
     }
 
     protected function verifyHash(string $code, string $hash): bool

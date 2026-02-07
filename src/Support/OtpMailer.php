@@ -14,47 +14,65 @@ class OtpMailer
 {
     public function send(string $email, string $code, ?AccountData $account = null): void
     {
-        /** @var class-string<OtpMailable&Mailable> $mailableClass */
+        /** @var int $ttl */
+        $ttl = config('frontdoor.otp.ttl', 600);
+        $ttlMinutes = (int) ceil($ttl / 60);
+
+        /** @var class-string $mailableClass */
         $mailableClass = config('frontdoor.mail.mailable', \Daikazu\LaravelFrontdoor\Mail\OtpMail::class);
-        $ttlMinutes = (int) ceil(config('frontdoor.otp.ttl', 600) / 60);
 
-        /** @var OtpMailable&Mailable $mailable */
-        $mailable = app($mailableClass)
-            ->setCode($code)
-            ->setExpiresInMinutes($ttlMinutes);
+        $instance = app($mailableClass);
 
-        if ($account !== null) {
-            $mailable->setAccount($account);
+        if (! $instance instanceof OtpMailable || ! $instance instanceof Mailable) {
+            throw new \InvalidArgumentException('Mailable must implement OtpMailable and extend Mailable');
         }
 
-        Mail::to($email)->send($mailable);
+        $instance->setCode($code);
+        $instance->setExpiresInMinutes($ttlMinutes);
+
+        if ($account !== null) {
+            $instance->setAccount($account);
+        }
+
+        Mail::to($email)->send($instance);
     }
 
     public function sendVerification(string $email, string $code): void
     {
-        /** @var class-string<OtpMailable&Mailable> $mailableClass */
+        /** @var int $ttl */
+        $ttl = config('frontdoor.otp.ttl', 600);
+        $ttlMinutes = (int) ceil($ttl / 60);
+
+        /** @var class-string $mailableClass */
         $mailableClass = config('frontdoor.mail.verification_mailable', \Daikazu\LaravelFrontdoor\Mail\OtpMail::class);
-        $ttlMinutes = (int) ceil(config('frontdoor.otp.ttl', 600) / 60);
 
-        /** @var OtpMailable&Mailable $mailable */
-        $mailable = app($mailableClass)
-            ->setCode($code)
-            ->setExpiresInMinutes($ttlMinutes);
+        $instance = app($mailableClass);
 
-        Mail::to($email)->send($mailable);
+        if (! $instance instanceof OtpMailable || ! $instance instanceof Mailable) {
+            throw new \InvalidArgumentException('Mailable must implement OtpMailable and extend Mailable');
+        }
+
+        $instance->setCode($code);
+        $instance->setExpiresInMinutes($ttlMinutes);
+
+        Mail::to($email)->send($instance);
     }
 
     public function sendWelcome(string $email, ?AccountData $account = null): void
     {
-        /** @var class-string<WelcomeMail> $mailableClass */
+        /** @var class-string $mailableClass */
         $mailableClass = config('frontdoor.mail.welcome_mailable', WelcomeMail::class);
 
-        $mailable = app($mailableClass);
+        $instance = app($mailableClass);
 
-        if ($account !== null) {
-            $mailable->setAccount($account);
+        if (! $instance instanceof WelcomeMail) {
+            throw new \InvalidArgumentException('Welcome mailable must extend WelcomeMail');
         }
 
-        Mail::to($email)->send($mailable);
+        if ($account !== null) {
+            $instance->setAccount($account);
+        }
+
+        Mail::to($email)->send($instance);
     }
 }

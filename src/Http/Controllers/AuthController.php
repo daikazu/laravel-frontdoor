@@ -28,7 +28,9 @@ class AuthController extends Controller
         $request->validate(['email' => 'required|email']);
 
         try {
-            $email = $request->input('email');
+            $emailInput = $request->input('email');
+            $email = is_string($emailInput) ? $emailInput : '';
+
             Frontdoor::requestOtp($email);
 
             session(['frontdoor_email' => $email]);
@@ -36,7 +38,10 @@ class AuthController extends Controller
             return redirect()->route('frontdoor.verify');
         } catch (AccountNotFoundException $e) {
             if (Frontdoor::registrationEnabled()) {
-                return redirect()->route('frontdoor.show-register', ['email' => $request->input('email')]);
+                $emailInput = $request->input('email');
+                $email = is_string($emailInput) ? $emailInput : '';
+
+                return redirect()->route('frontdoor.show-register', ['email' => $email]);
             }
 
             return back()->withErrors(['email' => 'No account found with this email address.']);
@@ -61,7 +66,8 @@ class AuthController extends Controller
     {
         $request->validate(['code' => 'required|digits:6']);
 
-        $email = session('frontdoor_email');
+        $emailSession = session('frontdoor_email');
+        $email = is_string($emailSession) ? $emailSession : null;
 
         if (! $email) {
             return redirect()->route('frontdoor.login');
@@ -69,7 +75,10 @@ class AuthController extends Controller
 
         try {
             if (session('frontdoor_registering', false)) {
-                if (Frontdoor::verifyEmailOnly($email, $request->input('code'))) {
+                $codeInput = $request->input('code');
+                $code = is_string($codeInput) ? $codeInput : '';
+
+                if (Frontdoor::verifyEmailOnly($email, $code)) {
                     session(['frontdoor_email_verified' => true]);
 
                     return redirect()->route('frontdoor.show-register-complete');
@@ -78,7 +87,10 @@ class AuthController extends Controller
                 return back()->withErrors(['code' => 'Invalid or expired code.']);
             }
 
-            if (Frontdoor::verify($email, $request->input('code'))) {
+            $codeInput = $request->input('code');
+            $code = is_string($codeInput) ? $codeInput : '';
+
+            if (Frontdoor::verify($email, $code)) {
                 session()->forget(['frontdoor_email', 'frontdoor_registering']);
 
                 return redirect()->intended('/');
@@ -99,7 +111,8 @@ class AuthController extends Controller
             return redirect()->route('frontdoor.login');
         }
 
-        $email = $request->query('email', '');
+        $emailQuery = $request->query('email', '');
+        $email = is_string($emailQuery) ? $emailQuery : '';
 
         return view('frontdoor::blade.register', [
             'email' => $email,
@@ -110,15 +123,18 @@ class AuthController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        $email = $request->input('email');
+        $emailInput = $request->input('email');
+        $email = is_string($emailInput) ? $emailInput : '';
 
         try {
             Frontdoor::requestEmailVerification($email);
 
-            session([
+            /** @var array<string, mixed> $sessionData */
+            $sessionData = [
                 'frontdoor_email' => $email,
                 'frontdoor_registering' => true,
-            ]);
+            ];
+            session($sessionData);
 
             return redirect()->route('frontdoor.verify');
         } catch (RegistrationNotSupportedException $e) {
@@ -146,7 +162,10 @@ class AuthController extends Controller
             return redirect()->route('frontdoor.login');
         }
 
-        $email = session('frontdoor_email');
+        $emailSession = session('frontdoor_email');
+        $email = is_string($emailSession) ? $emailSession : '';
+
+        /** @var array<string, mixed> $data */
         $data = $request->except(['_token']);
 
         try {

@@ -20,7 +20,7 @@ class FrontdoorIdentity implements Authenticatable
         return 'id';
     }
 
-    public function getAuthIdentifier(): mixed
+    public function getAuthIdentifier(): string
     {
         return $this->account->getId();
     }

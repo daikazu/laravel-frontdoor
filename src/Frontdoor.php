@@ -38,7 +38,9 @@ class Frontdoor
 
     public function requestOtp(string $email): string
     {
-        $account = $this->accountManager->driver()->findByEmail($email);
+        /** @var \Daikazu\LaravelFrontdoor\Contracts\AccountDriver $driver */
+        $driver = $this->accountManager->driver();
+        $account = $driver->findByEmail($email);
 
         if ($account === null) {
             throw new AccountNotFoundException($email);
@@ -65,7 +67,9 @@ class Frontdoor
         }
 
         // If account already exists, fall through to normal OTP flow (prevents email enumeration)
-        $existing = $this->accountManager->driver()->findByEmail($email);
+        /** @var \Daikazu\LaravelFrontdoor\Contracts\AccountDriver $driver */
+        $driver = $this->accountManager->driver();
+        $existing = $driver->findByEmail($email);
         if ($existing !== null) {
             return $this->requestOtp($email);
         }
@@ -93,7 +97,9 @@ class Frontdoor
             return false;
         }
 
-        $account = $this->accountManager->driver()->findByEmail($email);
+        /** @var \Daikazu\LaravelFrontdoor\Contracts\AccountDriver $driver */
+        $driver = $this->accountManager->driver();
+        $account = $driver->findByEmail($email);
 
         if ($account === null) {
             return false;
@@ -110,7 +116,9 @@ class Frontdoor
 
     public function loginAs(string $email): bool
     {
-        $account = $this->accountManager->driver()->findByEmail($email);
+        /** @var \Daikazu\LaravelFrontdoor\Contracts\AccountDriver $driver */
+        $driver = $this->accountManager->driver();
+        $account = $driver->findByEmail($email);
 
         if ($account === null) {
             return false;
@@ -127,8 +135,11 @@ class Frontdoor
 
     public function registrationEnabled(): bool
     {
+        /** @var \Daikazu\LaravelFrontdoor\Contracts\AccountDriver $driver */
+        $driver = $this->accountManager->driver();
+
         return config('frontdoor.registration.enabled', false)
-            && $this->accountManager->driver() instanceof CreatableAccountDriver;
+            && $driver instanceof CreatableAccountDriver;
     }
 
     /**
@@ -144,8 +155,11 @@ class Frontdoor
             throw new RegistrationNotSupportedException;
         }
 
+        /** @var \Daikazu\LaravelFrontdoor\Contracts\AccountDriver $accountDriver */
+        $accountDriver = $this->accountManager->driver();
+
         /** @var CreatableAccountDriver $driver */
-        $driver = $this->accountManager->driver();
+        $driver = $accountDriver;
 
         return $driver->registrationFields();
     }
@@ -167,15 +181,20 @@ class Frontdoor
         }
 
         // If account already exists, fall through to verification flow
-        $existing = $this->accountManager->driver()->findByEmail($email);
+        /** @var \Daikazu\LaravelFrontdoor\Contracts\AccountDriver $driver */
+        $driver = $this->accountManager->driver();
+        $existing = $driver->findByEmail($email);
         if ($existing !== null) {
             $this->requestEmailVerification($email);
 
             return $existing;
         }
 
+        /** @var \Daikazu\LaravelFrontdoor\Contracts\AccountDriver $accountDriver */
+        $accountDriver = $this->accountManager->driver();
+
         /** @var CreatableAccountDriver $driver */
-        $driver = $this->accountManager->driver();
+        $driver = $accountDriver;
 
         // Build validation rules from registration fields
         $rules = [];
