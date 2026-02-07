@@ -38,9 +38,41 @@ it('proxies account data methods', function () {
 it('returns null for password methods', function () {
     $account = new SimpleAccountData(id: '1', name: 'Jane', email: 'jane@example.com');
     $identity = new FrontdoorIdentity($account);
+    expect($identity->getAuthPasswordName())->toBe('password');
     expect($identity->getAuthPassword())->toBe('');
     expect($identity->getRememberToken())->toBeNull();
     expect($identity->getRememberTokenName())->toBe('');
+});
+
+it('setRememberToken does nothing', function () {
+    $account = new SimpleAccountData(id: '1', name: 'Jane', email: 'jane@example.com');
+    $identity = new FrontdoorIdentity($account);
+    $identity->setRememberToken('token');
+    expect($identity->getRememberToken())->toBeNull();
+});
+
+it('getAccountData returns the underlying account', function () {
+    $account = new SimpleAccountData(id: '1', name: 'Jane', email: 'jane@example.com');
+    $identity = new FrontdoorIdentity($account);
+    expect($identity->getAccountData())->toBe($account);
+});
+
+it('getAvatarUrl proxies to account data', function () {
+    $account = new SimpleAccountData(id: '1', name: 'Jane', email: 'jane@example.com', avatarUrl: 'https://example.com/avatar.jpg');
+    $identity = new FrontdoorIdentity($account);
+    expect($identity->getAvatarUrl())->toBe('https://example.com/avatar.jpg');
+});
+
+it('getMetadata proxies to account data', function () {
+    $account = new SimpleAccountData(id: '1', name: 'Jane', email: 'jane@example.com', metadata: ['role' => 'admin']);
+    $identity = new FrontdoorIdentity($account);
+    expect($identity->getMetadata())->toBe(['role' => 'admin']);
+});
+
+it('getInitial proxies to account data', function () {
+    $account = new SimpleAccountData(id: '1', name: 'Jane', email: 'jane@example.com');
+    $identity = new FrontdoorIdentity($account);
+    expect($identity->getInitial())->toBe('J');
 });
 
 it('serializes to array', function () {

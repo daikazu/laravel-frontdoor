@@ -58,3 +58,44 @@ it('returns proper text color for contrast', function () {
 
     expect($style->textColor)->toBeIn(['#1f2937', '#ffffff']);
 });
+
+it('adjusts hue2 when hues are less than 30 degrees apart', function () {
+    // We need to find an identifier whose SHA1 produces hues < 30° apart.
+    // Brute-force check a few known cases.
+    $found = false;
+    foreach (['close-hues-test-xyz', 'abc123', 'zz', 'qwerty', 'aaa', 'bbb', 'test1', 'hue-test'] as $candidate) {
+        $hash = sha1(strtolower(trim($candidate)));
+        $hue1 = hexdec(substr($hash, 0, 2)) / 255 * 360;
+        $hue2 = hexdec(substr($hash, 2, 2)) / 255 * 360;
+
+        if (abs($hue1 - $hue2) < 30) {
+            $style = Avatar::gradient($candidate);
+
+            // After adjustment, hue2 should be hue1 + 60 (mod 360)
+            $expectedHue2 = fmod($hue1 + 60, 360);
+            expect(round($style->hue2, 2))->toBe(round($expectedHue2, 2));
+            $found = true;
+            break;
+        }
+    }
+
+    // If none of the above work, generate one algorithmically
+    if (! $found) {
+        for ($i = 0; $i < 1000; $i++) {
+            $candidate = "huetest{$i}";
+            $hash = sha1(strtolower(trim($candidate)));
+            $hue1 = hexdec(substr($hash, 0, 2)) / 255 * 360;
+            $hue2 = hexdec(substr($hash, 2, 2)) / 255 * 360;
+
+            if (abs($hue1 - $hue2) < 30) {
+                $style = Avatar::gradient($candidate);
+                $expectedHue2 = fmod($hue1 + 60, 360);
+                expect(round($style->hue2, 2))->toBe(round($expectedHue2, 2));
+                $found = true;
+                break;
+            }
+        }
+    }
+
+    expect($found)->toBeTrue();
+});

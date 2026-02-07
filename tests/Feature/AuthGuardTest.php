@@ -65,3 +65,84 @@ it('works with auth helper', function () {
     expect(auth('frontdoor')->user()->getName())->toBe('Jane');
     expect(auth('frontdoor')->id())->toBe('123');
 });
+
+it('returns true for guest when not authenticated', function () {
+    expect(Auth::guard('frontdoor')->guest())->toBeTrue();
+});
+
+it('returns false for guest when authenticated', function () {
+    $account = new SimpleAccountData(id: '123', name: 'Jane', email: 'jane@example.com');
+    $identity = new FrontdoorIdentity($account);
+
+    Auth::guard('frontdoor')->login($identity);
+
+    expect(Auth::guard('frontdoor')->guest())->toBeFalse();
+});
+
+it('validate always returns false', function () {
+    expect(Auth::guard('frontdoor')->validate(['email' => 'jane@example.com']))->toBeFalse();
+});
+
+it('hasUser returns false when no user set', function () {
+    expect(Auth::guard('frontdoor')->hasUser())->toBeFalse();
+});
+
+it('hasUser returns true after login', function () {
+    $account = new SimpleAccountData(id: '123', name: 'Jane', email: 'jane@example.com');
+    $identity = new FrontdoorIdentity($account);
+
+    Auth::guard('frontdoor')->login($identity);
+
+    expect(Auth::guard('frontdoor')->hasUser())->toBeTrue();
+});
+
+it('setUser accepts FrontdoorIdentity', function () {
+    $account = new SimpleAccountData(id: '123', name: 'Jane', email: 'jane@example.com');
+    $identity = new FrontdoorIdentity($account);
+
+    $guard = Auth::guard('frontdoor');
+    $guard->setUser($identity);
+
+    expect($guard->hasUser())->toBeTrue();
+    expect($guard->user())->toBe($identity);
+});
+
+it('setUser throws for non-FrontdoorIdentity', function () {
+    $user = new class implements \Illuminate\Contracts\Auth\Authenticatable
+    {
+        public function getAuthIdentifierName(): string
+        {
+            return 'id';
+        }
+
+        public function getAuthIdentifier(): mixed
+        {
+            return '1';
+        }
+
+        public function getAuthPasswordName(): string
+        {
+            return 'password';
+        }
+
+        public function getAuthPassword(): string
+        {
+            return '';
+        }
+
+        public function getRememberToken(): ?string
+        {
+            return null;
+        }
+
+        public function setRememberToken($value): void {}
+
+        public function getRememberTokenName(): string
+        {
+            return '';
+        }
+    };
+
+    expect(fn () => Auth::guard('frontdoor')->setUser($user))
+        ->toThrow(\InvalidArgumentException::class);
+});

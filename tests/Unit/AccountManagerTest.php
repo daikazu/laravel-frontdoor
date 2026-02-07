@@ -64,6 +64,23 @@ it('resolves a named driver mapped to a class in config', function () {
     expect($account->getName())->toBe('Mapped User');
 });
 
+it('throws InvalidArgumentException when FQCN does not implement AccountDriver', function () {
+    $nonDriver = new class
+    {
+        public function hello(): string
+        {
+            return 'world';
+        }
+    };
+
+    app()->instance($nonDriver::class, $nonDriver);
+    config(['frontdoor.accounts.driver' => $nonDriver::class]);
+
+    $manager = app(AccountManager::class);
+
+    expect(fn () => $manager->driver())->toThrow(InvalidArgumentException::class);
+});
+
 it('resolves a class name as driver', function () {
     $provider = new class implements AccountDriver
     {
