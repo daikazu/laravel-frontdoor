@@ -98,8 +98,11 @@ class LaravelFrontdoorServiceProvider extends PackageServiceProvider
 
         Blade::componentNamespace('Daikazu\\LaravelFrontdoor\\View\\Components', 'frontdoor');
 
-        if ($this->app->bound('livewire.finder')) {
-            \Livewire\Livewire::addNamespace('frontdoor', classNamespace: 'Daikazu\\LaravelFrontdoor\\Livewire');
+        if ($this->app->bound('livewire')) {
+            $livewire = $this->app->make('livewire');
+            if (method_exists($livewire, 'addNamespace')) {
+                $livewire->addNamespace('frontdoor', classNamespace: 'Daikazu\\LaravelFrontdoor\\Livewire');
+            }
         }
     }
 

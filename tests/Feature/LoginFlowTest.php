@@ -14,7 +14,12 @@ use Livewire\LivewireServiceProvider;
 uses()->beforeEach(function () {
     if (! app()->providerIsLoaded(LivewireServiceProvider::class)) {
         app()->register(LivewireServiceProvider::class);
-        \Livewire\Livewire::addNamespace('frontdoor', classNamespace: 'Daikazu\\LaravelFrontdoor\\Livewire');
+    }
+
+    // Livewire 4 uses addNamespace; Livewire 3 doesn't need it for FQCN-based tests
+    $manager = app('livewire');
+    if (method_exists($manager, 'addNamespace')) {
+        $manager->addNamespace('frontdoor', classNamespace: 'Daikazu\\LaravelFrontdoor\\Livewire');
     }
 })->in(__FILE__);
 
