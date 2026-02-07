@@ -10,6 +10,7 @@ use Daikazu\LaravelFrontdoor\Contracts\AccountData;
 readonly class SimpleAccountData implements AccountData
 {
     use HasPropertyAccess;
+
     /**
      * Create a new simple account data instance.
      *
@@ -71,5 +72,4 @@ readonly class SimpleAccountData implements AccountData
             'initial' => $this->getInitial(),
         ];
     }
-
 }

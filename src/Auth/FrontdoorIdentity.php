@@ -11,6 +11,7 @@ use Illuminate\Contracts\Auth\Authenticatable;
 class FrontdoorIdentity implements Authenticatable
 {
     use HasPropertyAccess;
+
     public function __construct(
         protected AccountData $account
     ) {}
@@ -101,5 +102,4 @@ class FrontdoorIdentity implements Authenticatable
     {
         return $this->account;
     }
-
 }
